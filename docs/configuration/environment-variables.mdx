@@ -1,0 +1,120 @@
+---
+title: 'Environment Variables'
+description: 'Configure MCPSpot using environment variables'
+---
+
+# Environment Variables
+
+MCPSpot uses environment variables for configuration. This guide covers all available variables and their usage.
+
+## Core Application Settings
+
+### Server Configuration
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `PORT` | `3000` | Port number for the HTTP server |
+| `INIT_TIMEOUT` | `300000` | Initial timeout for the application |
+| `BASE_PATH` | `''` | The base path of the application |
+| `READONLY` | `false` | Set to `true` to enable readonly mode |
+| `MCPHUB_SETTING_PATH` | | Path to the MCPSpot settings |
+| `NODE_ENV` | `development` | Application environment (`development`, `production`, `test`) |
+
+```env
+PORT=3000
+INIT_TIMEOUT=300000
+BASE_PATH=/api
+READONLY=true
+MCPHUB_SETTING_PATH=/path/to/settings
+NODE_ENV=production
+```
+
+## Authentication & Security
+
+### JWT Configuration
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `JWT_SECRET` | - | Secret key for JWT token signing (required) |
+
+```env
+JWT_SECRET=your-super-secret-key-change-this-in-production
+```
+
+## Smart Routing & Embeddings
+
+### Embedding Configuration
+
+| Variable | Type | Default | Description |
+| --- | --- | --- | --- |
+| `SMART_ROUTING_ENABLED` | `boolean` | `false` | Enable the smart routing feature |
+| `EMBEDDING_MODEL` | `string` | `text-embedding-3-small` | Embedding model name used for vector search |
+| `AZURE_OPENAI_EMBEDDING_MODEL` | `string` | `text-embedding-3-small` | The actual OpenAI model name deployed in Azure (e.g. `text-embedding-3-small`). Azure deployment names are arbitrary identifiers, so this field tells MCPSpot which OpenAI model is behind the deployment, enabling correct token-limit enforcement and tokenizer selection. Only used when `SMART_ROUTING_EMBEDDING_PROVIDER=azure_openai`. |
+| `EMBEDDING_MAX_TOKENS` | `number` | By model | Maximum tokens for text truncation before generating embeddings. Overrides the per-model default. Useful to match the `batch_size` of a local inference server (e.g. LocalAI, LM Studio). When unset, the limit is resolved automatically: `text-embedding-*` → 8191, `bge-m3` → 8192, `gemini-embedding-001` → 2048, other BGE models → 512, unknown models → 512. |
+
+```env
+# Limit truncation to 510 tokens to match a LocalAI batch_size=512 setup
+EMBEDDING_MAX_TOKENS=510
+```
+
+## Configuration Examples
+
+### Development Environment
+
+```env
+# .env.development
+NODE_ENV=development
+PORT=3000
+
+# Auth
+JWT_SECRET=dev-secret-key
+```
+
+### Production Environment
+
+```env
+# .env.production
+NODE_ENV=production
+PORT=3000
+
+# Security
+JWT_SECRET=your-super-secure-production-secret
+```
+
+### Docker Environment
+
+```env
+# .env.docker
+NODE_ENV=production
+PORT=3000
+
+# Security
+JWT_SECRET_FILE=/run/secrets/jwt_secret
+```
+
+## Environment Variable Loading
+
+MCPSpot loads environment variables in the following order:
+
+1. System environment variables
+2. `.env.local` (ignored by git)
+3. `.env.{NODE_ENV}` (e.g., `.env.production`)
+4. `.env`
+
+### Using dotenv-expand
+
+MCPSpot supports variable expansion:
+
+```env
+BASE_URL=https://api.example.com
+API_ENDPOINT=${BASE_URL}/v1
+```
+
+## Security Best Practices
+
+1. **Never commit secrets** to version control
+2. **Use strong, unique secrets** for production
+3. **Rotate secrets regularly**
+4. **Use environment-specific files**
+5. **Validate all environment variables** at startup
+6. **Use Docker secrets** for container deployments
