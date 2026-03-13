@@ -1,0 +1,60 @@
+version: "3.8"
+
+services:
+  # PostgreSQL database for MCPSpot configuration
+  postgres:
+    image: pgvector/pgvector:pg17-alpine
+    container_name: mcpspot-postgres
+    environment:
+      POSTGRES_DB: mcpspot
+      POSTGRES_USER: mcpspot
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-mcpspot_password}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mcpspot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mcpspot-network
+
+  # MCPSpot application
+  mcpspot:
+    image: krishnashahane/mcpspot:latest
+    container_name: mcpspot
+    environment:
+      # Database connection (setting DB_URL automatically enables database mode)
+      DB_URL: "postgresql://mcpspot:${DB_PASSWORD:-mcpspot_password}@postgres:5432/mcpspot"
+
+      # Optional: Explicitly control database mode (overrides auto-detection)
+      # USE_DB: "true"
+
+      # Application settings
+      PORT: 3000
+      NODE_ENV: production
+
+      # Optional: Custom npm registry
+      # NPM_REGISTRY: https://registry.npmjs.org/
+
+      # Optional: Proxy settings
+      # HTTP_PROXY: http://proxy:8080
+      # HTTPS_PROXY: http://proxy:8080
+    ports:
+      - "${MCPHUB_PORT:-3000}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - mcpspot-network
+
+volumes:
+  pgdata:
+    driver: local
+
+networks:
+  mcpspot-network:
+    driver: bridge
