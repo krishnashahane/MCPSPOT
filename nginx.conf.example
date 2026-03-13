@@ -1,0 +1,72 @@
+# Nginx configuration example for MCPSpot with subpath routing
+# This example shows how to deploy MCPSpot under a subpath like /mcpspot
+
+server {
+    listen 80;
+    server_name your-domain.com;
+    
+    # MCPSpot under /mcpspot subpath
+    location /mcpspot/ {
+        # Remove the subpath prefix before forwarding to MCPSpot
+        rewrite ^/mcpspot/(.*)$ /$1 break;
+        
+        proxy_pass http://mcpspot:3000/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        
+        # Important: Disable buffering for SSE connections
+        proxy_buffering off;
+        proxy_cache off;
+        
+        # Support for Server-Sent Events (SSE)
+        proxy_read_timeout 24h;
+        proxy_send_timeout 24h;
+    }
+    
+    # Alternative configuration if you want to keep the subpath in the backend
+    # In this case, set BASE_PATH=/mcpspot
+    # location /mcpspot/ {
+    #     proxy_pass http://mcpspot:3000/mcpspot/;
+    #     proxy_http_version 1.1;
+    #     proxy_set_header Upgrade $http_upgrade;
+    #     proxy_set_header Connection 'upgrade';
+    #     proxy_set_header Host $host;
+    #     proxy_set_header X-Real-IP $remote_addr;
+    #     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    #     proxy_set_header X-Forwarded-Proto $scheme;
+    #     proxy_cache_bypass $http_upgrade;
+    #     
+    #     # Important: Disable buffering for SSE connections
+    #     proxy_buffering off;
+    #     proxy_cache off;
+    #     
+    #     # Support for Server-Sent Events (SSE)
+    #     proxy_read_timeout 24h;
+    #     proxy_send_timeout 24h;
+    # }
+}
+
+# Docker Compose example with subpath
+# version: '3.8'
+# services:
+#   mcpspot:
+#     image: krishnashahane/mcpspot
+#     environment:
+#       - BASE_PATH=/mcpspot
+#     volumes:
+#       - ./mcp_settings.json:/app/mcp_settings.json
+#   
+#   nginx:
+#     image: nginx:alpine
+#     ports:
+#       - "80:80"
+#     volumes:
+#       - ./nginx.conf:/etc/nginx/conf.d/default.conf
+#     depends_on:
+#       - mcpspot
