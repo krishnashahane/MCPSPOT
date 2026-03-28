@@ -58,6 +58,10 @@ docker build -t mcpspot .
 docker run -p 3000:3000 mcpspot
 ```
 
-## Author
+## Developer
 
 Krishna Shahane
+
+## License
+
+MIT
