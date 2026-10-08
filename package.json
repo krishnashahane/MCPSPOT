@@ -2,38 +2,37 @@
   "name": "mcpspot",
   "version": "dev",
   "description": "A powerful MCP server management platform",
-  "main": "dist/index.js",
+  "main": "./index.js",
   "type": "module",
-  "bin": {
-    "mcpspot": "bin/cli.js"
-  },
   "files": [
-    "dist",
-    "bin",
-    "mcp_settings.json",
-    "servers.json",
-    "frontend/dist",
-    "README.md"
+    "*.js",
+    "base",
+    "clients",
+    "config",
+    "constants",
+    "controllers",
+    "db",
+    "locales",
+    "middlewares",
+    "models",
+    "routes",
+    "scripts",
+    "services",
+    "types",
+    "utils",
+    "Dockerfile",
+    "entrypoint.sh",
+    "LICENSE",
+    "README.md",
+    "mcp_settings.json"
   ],
   "scripts": {
-    "build": "pnpm backend:build && pnpm frontend:build",
-    "backend:build": "tsc",
-    "start": "node dist/index.js",
-    "backend:dev": "tsx watch src/index.ts",
-    "backend:debug": "tsx watch src/index.ts --inspect",
+    "build": "node scripts/verify-dist.js",
+    "start": "node server.js",
+    "dev": "node --watch server.js",
     "lint": "eslint .",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "test:verbose": "jest --verbose",
-    "test:ci": "jest --ci --coverage --watchAll=false",
-    "frontend:dev": "cd frontend && vite",
-    "frontend:build": "cd frontend && vite build",
-    "frontend:preview": "cd frontend && vite preview",
-    "dev": "concurrently \"pnpm backend:dev\" \"pnpm frontend:dev\"",
-    "debug": "concurrently \"pnpm backend:debug\" \"pnpm frontend:dev\"",
-    "prepublishOnly": "npm run build && node scripts/verify-dist.js"
+    "test": "node scripts/smoke-test.js",
+    "test:ci": "node scripts/smoke-test.js"
   },
   "keywords": [
     "typescript",
@@ -137,7 +136,7 @@
     "zod": "^3.25.76"
   },
   "engines": {
-    "node": "^18.0.0 || >=20.0.0"
+    "node": ">=20.0.0"
   },
   "packageManager": "pnpm@10.12.4+sha256.cadfd9e6c9fcc2cb76fe7c0779a5250b632898aea5f53d833a73690c77a778d9",
   "pnpm": {
@@ -167,5 +166,8 @@
       "sharp",
       "unrs-resolver"
     ]
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
