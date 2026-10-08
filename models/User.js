@@ -69,8 +69,14 @@ export const initializeDefaultUser = async () => {
     const userDao = getUserDao();
     const users = await userDao.findAll();
     if (users.length === 0) {
-        await userDao.createWithHashedPassword('admin', 'admin123', true);
-        console.log('Default admin user created');
+        if (process.env.ADMIN_PASSWORD) {
+            const username = process.env.ADMIN_USERNAME || 'admin';
+            await userDao.createWithHashedPassword(username, process.env.ADMIN_PASSWORD, true);
+            console.log(`Initial admin user created: ${username}`);
+        }
+        else {
+            console.warn('No users exist and ADMIN_PASSWORD is not set; skipping automatic admin creation.');
+        }
     }
 };
 //# sourceMappingURL=User.js.map
