@@ -4,13 +4,12 @@ MCPSpot is a local MCP (Model Context Protocol) server management gateway. It ex
 
 ## Current repository layout
 
-This repository contains the **built JavaScript runtime** used by MCPSpot. The original TypeScript source tree and frontend source tree are not included in this snapshot, so the project is intentionally run directly with Node.js rather than rebuilt from missing `src/` or `frontend/` directories.
+This repository contains the built JavaScript runtime used by MCPSpot. The original TypeScript source tree and frontend source tree are not included in this snapshot, so the project runs directly with Node.js rather than attempting to rebuild missing `src/` or `frontend/` directories.
 
 ## Requirements
 
 - Node.js 20 or newer
 - pnpm 10.x is recommended
-- A configured MCP server list/configuration
 - PostgreSQL only when database mode is enabled
 
 ## Install and run
@@ -29,8 +28,6 @@ Development mode:
 pnpm dev
 ```
 
-The `dev` script watches the checked-in JavaScript runtime and restarts the server when files change.
-
 ## Configuration
 
 Copy the example environment file:
@@ -39,25 +36,25 @@ Copy the example environment file:
 cp .env.example .env
 ```
 
-At minimum, set a strong persistent JWT secret:
+Set a strong persistent JWT secret:
 
 ```env
 JWT_SECRET=replace-with-a-long-random-secret
 ```
 
-For browser clients hosted on a different origin, explicitly allow the origin:
+For browser clients hosted on another origin, explicitly allow the origin:
 
 ```env
 CORS_ORIGINS=http://localhost:3000
 ```
 
-Do not use a wildcard CORS policy with credentials.
+Do not use wildcard credentialed CORS in production.
 
 ### Initial administrator
 
 MCPSpot no longer creates a hard-coded `admin/admin123` account.
 
-On first startup, an administrator is created **only when** both `ADMIN_USERNAME` and `ADMIN_PASSWORD` are provided. Use a strong password and change it through the normal account-management flow.
+On first startup, an administrator is created only when `ADMIN_USERNAME` and `ADMIN_PASSWORD` are provided. Use a strong password.
 
 ### Optional PostgreSQL mode
 
@@ -68,37 +65,32 @@ DB_URL=postgresql://user:password@localhost:5432/mcpspot
 
 ## Security defaults
 
-The runtime has been hardened to:
-
-- Disable Express-powered-by disclosure.
-- Restrict credentialed CORS to explicitly configured origins.
-- Add standard browser security headers.
-- Reject JWTs supplied through query parameters.
-- Require a persistent `JWT_SECRET` in production.
-- Avoid creating a known default administrator password.
-- Ignore local environment files and runtime data in Git.
-- Verify only the files that actually exist in this repository before startup/build packaging.
+- Express server-identification headers are disabled.
+- Credentialed CORS is restricted to explicitly configured origins.
+- Standard browser security headers are added.
+- JWTs are accepted only from the request header, not query strings.
+- Production requires a persistent `JWT_SECRET`.
+- No known default administrator password is created.
+- Local environment files and runtime data are ignored by Git.
 
 ## Commands
 
 ```bash
-pnpm build   # validate the checked-in runtime
+pnpm build   # verify the checked-in runtime
 pnpm start   # start MCPSpot
 pnpm dev     # watch and restart the runtime
-pnpm test    # run the repository smoke test
+pnpm test    # run the runtime smoke test
 pnpm lint    # run ESLint
 ```
 
 ## Docker
-
-The repository includes a Dockerfile. Build and run it with:
 
 ```bash
 docker build -t mcpspot .
 docker run --rm -p 3000:3000 --env-file .env mcpspot
 ```
 
-Do not expose the container publicly without authentication, TLS termination, and an appropriately restricted CORS policy.
+Do not expose the service publicly without authentication, TLS termination, and a restricted CORS policy.
 
 ## License
 
