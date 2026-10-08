@@ -36,10 +36,31 @@ export class AppServer {
         this.server = null;
         this.frontendPath = null;
         this.app = express();
+        const allowedOrigins = (process.env.CORS_ORIGINS || '')
+            .split(',')
+            .map((origin) => origin.trim())
+            .filter(Boolean);
+        this.app.disable('x-powered-by');
         this.app.use(cors({
-            origin: true,
-            credentials: true,
+            origin: allowedOrigins.length > 0
+                ? (origin, callback) => {
+                    if (!origin || allowedOrigins.includes(origin)) {
+                        callback(null, true);
+                    }
+                    else {
+                        callback(new Error('CORS origin not allowed'));
+                    }
+                }
+                : false,
+            credentials: allowedOrigins.length > 0,
         }));
+        this.app.use((req, res, next) => {
+            res.setHeader('X-Content-Type-Options', 'nosniff');
+            res.setHeader('X-Frame-Options', 'DENY');
+            res.setHeader('Referrer-Policy', 'no-referrer');
+            res.setHeader('Cross-Origin-Resource-Policy', 'same-site');
+            next();
+        });
         this.port = config.port;
         this.basePath = config.basePath;
     }
