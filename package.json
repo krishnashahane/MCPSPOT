@@ -32,7 +32,8 @@
     "dev": "node --watch server.js",
     "lint": "eslint .",
     "test": "node scripts/smoke-test.js",
-    "test:ci": "node scripts/smoke-test.js"
+    "test:ci": "node scripts/smoke-test.js",
+    "security:check": "pnpm audit --prod"
   },
   "keywords": [
     "typescript",
