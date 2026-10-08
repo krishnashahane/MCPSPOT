@@ -104,10 +104,9 @@ export const auth = async (req, res, next) => {
             return;
         }
     }
-    // Get token from header or query parameter
-    const headerToken = req.header('x-auth-token');
-    const queryToken = req.query.token;
-    const token = headerToken || queryToken;
+    // Accept JWT only from the dedicated request header.
+    // Query-string tokens leak through logs, browser history, referrers, and proxies.
+    const token = req.header('x-auth-token');
     // Check if no token
     if (!token) {
         res.status(401).json({ success: false, message: 'No token, authorization denied' });
